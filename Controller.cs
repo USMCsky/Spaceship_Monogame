@@ -4,6 +4,8 @@ using System.Text;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System.IO;
+using System.Globalization;
 
 namespace Spaceship
 {
@@ -15,6 +17,61 @@ namespace Spaceship
         public double maxtime  = 2;
         public int nextSpeed = 240;
         public bool inGame = false;
+        public double totalTime = 0;
+        public double highScore = 0;
+
+        // File path to store the high score locally
+        private string HighScorePath
+        {
+            get
+            {
+                string dir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Spaceship");
+                return Path.Combine(dir, "highscore.txt");
+            }
+        }
+
+        public void LoadHighScore()
+        {
+            try
+            {
+                string path = HighScorePath;
+                if (File.Exists(path))
+                {
+                    var txt = File.ReadAllText(path);
+                    if (double.TryParse(txt, NumberStyles.Float, CultureInfo.InvariantCulture, out double val))
+                    {
+                        highScore = val;
+                    }
+                }
+            }
+            catch
+            {
+                // ignore errors reading high score
+            }
+        }
+
+        public void SaveHighScore()
+        {
+            try
+            {
+                string path = HighScorePath;
+                Directory.CreateDirectory(Path.GetDirectoryName(path));
+                File.WriteAllText(path, highScore.ToString(CultureInfo.InvariantCulture));
+            }
+            catch
+            {
+                // ignore write errors
+            }
+        }
+
+        public void TryUpdateHighScore()
+        {
+            if (totalTime > highScore)
+            {
+                highScore = totalTime;
+                SaveHighScore();
+            }
+        }
 
         // Constructor to initialize the timer
         public void conUpdate(GameTime gameTime)
@@ -23,6 +80,7 @@ namespace Spaceship
             if (inGame)
             {
                 timer -= gameTime.ElapsedGameTime.TotalSeconds;
+                totalTime += gameTime.ElapsedGameTime.TotalSeconds;
             }
             else
             {
@@ -30,6 +88,10 @@ namespace Spaceship
                 if(state.IsKeyDown(Keys.Enter))
                 {
                     inGame = true;
+                    totalTime = 0;
+                    timer = 2;
+                    maxtime = 2;
+                    nextSpeed = 240;
                 }
             }
 

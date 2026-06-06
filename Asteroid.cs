@@ -14,7 +14,7 @@ namespace Spaceship
         // Speed at which the asteroid moves to the left
         public int speed;
         // Radius of the asteroid for collision detection
-        public int radius = 59;
+        public int radius = 42;
 
         public Asteroid(int newSpeed)
         {

@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Microsoft.Xna.Framework;
+﻿using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
+using System;
+using System.Collections.Generic;
+using System.Text;
+using System.Text.Json;
 
 namespace Spaceship
 {
@@ -50,6 +51,9 @@ namespace Spaceship
             gameFont = Content.Load<SpriteFont>("spaceFont");
             timerFont = Content.Load<SpriteFont>("timerFont");
 
+            // Load persisted high score
+            gameController.LoadHighScore();
+
         }
 
         protected override void Update(GameTime gameTime)
@@ -65,9 +69,21 @@ namespace Spaceship
 
             // Update the game controller, which will manage the asteroids and add new ones as needed
             gameController.conUpdate(gameTime);
+
             for (int i = 0; i < gameController.asteroids.Count; i++)
             {
                 gameController.asteroids[i].asteroidUpdate(gameTime);
+
+                int sum = gameController.asteroids[i].radius + player.radius;
+                if(Vector2.Distance(gameController.asteroids[i].position, player.position) < sum)
+                {
+                    // If a collision is detected between the player's ship and an asteroid, reset the game state
+                    player.position = Ship.defaultPosition;  // Reset the player's position to the default starting position
+                    gameController.asteroids.Clear();  // Clear all asteroids from the game
+                    gameController.inGame = false;  // Set inGame to false to indicate that the game is no longer active
+                    // Check if we have a new high score and save it
+                    gameController.TryUpdateHighScore();
+                }
             }
 
             base.Update(gameTime);
@@ -97,7 +113,15 @@ namespace Spaceship
                 int halfWidth = _graphics.PreferredBackBufferWidth / 2 - (int)sizeOfText.X / 2;
                 // Draw the menu message at the calculated position
                 _spriteBatch.DrawString(gameFont, menuMessage, new Vector2(halfWidth, 200), Color.White);
+                // Show high score
+                string hs = "High Score: " + Math.Round(gameController.highScore, 2);
+                Vector2 hsSize = gameFont.MeasureString(hs);
+                int hsX = _graphics.PreferredBackBufferWidth / 2 - (int)hsSize.X / 2;
+                _spriteBatch.DrawString(gameFont, hs, new Vector2(hsX, 260), Color.Yellow);
             }
+
+            // Draw the timer showing how long the player has survived in the game, rounded to 2 decimal places
+            _spriteBatch.DrawString(timerFont, "Time: " + Math.Round(gameController.totalTime, 2), new Vector2(10, 10), Color.White);
 
             _spriteBatch.End();
 
