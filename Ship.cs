@@ -1,4 +1,7 @@
-﻿using Microsoft.Xna.Framework;
+﻿using System;
+using System.Collections.Generic;
+using System.Text;
+using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 
@@ -7,7 +10,8 @@ namespace Spaceship
     
     class Ship  // This class represents the player's spaceship
     {
-        public Vector2 position = new Vector2(100,100);
+        static public Vector2 defaultPosition = new Vector2(640, 360);  // Default starting position for the ship
+        public Vector2 position = defaultPosition;
         public int speed = 300;
 
         public void shipUpdate(GameTime gameTime)
