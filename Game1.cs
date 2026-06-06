@@ -15,6 +15,10 @@ namespace Spaceship
         SpriteFont gameFont;
         SpriteFont timerFont;
 
+        Ship player = new Ship();  // Create an instance of the Ship class to represent the player's spaceship
+        Controller gameController = new Controller();  // Create an instance of the Controller class to manage asteroids
+
+
         public Game1()
         {
             _graphics = new GraphicsDeviceManager(this);
@@ -49,8 +53,14 @@ namespace Spaceship
         {
             if (GamePad.GetState(PlayerIndex.One).Buttons.Back == ButtonState.Pressed || Keyboard.GetState().IsKeyDown(Keys.Escape))
                 Exit();
-
-            // TODO: Add your update logic here
+            
+            player.shipUpdate(gameTime);
+            // Update the game controller, which will manage the asteroids and add new ones as needed
+            gameController.conUpdate(gameTime);
+            for (int i = 0; i < gameController.asteroids.Count; i++)
+            {
+                gameController.asteroids[i].asteroidUpdate(gameTime);
+            }
 
             base.Update(gameTime);
         }
@@ -61,6 +71,14 @@ namespace Spaceship
 
             _spriteBatch.Begin();
             _spriteBatch.Draw(spaceSprite, new Vector2(0, 0), Color.White);
+            // Draw the player's spaceship at its current position
+            _spriteBatch.Draw(shipSprite, new Vector2(player.position.X-34, player.position.Y-50), Color.White);
+
+            for (int i = 0; i < gameController.asteroids.Count; i++)
+            {
+                _spriteBatch.Draw(asteroidSprite, new Vector2(gameController.asteroids[i].position.X - gameController.asteroids[i].radius, gameController.asteroids[i].position.Y - gameController.asteroids[i].radius), Color.White);
+            }
+
             _spriteBatch.End();
 
             base.Draw(gameTime);
